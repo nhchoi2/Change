@@ -45,7 +45,6 @@ def parse_time(time_str):
 st.title("🎵 AMR 파일 변환 및 컷팅 앱")
 st.write("AMR 파일을 업로드하여 MP3로 변환한 후, 원하는 구간을 컷팅(편집)하여 다운로드할 수 있습니다.")
 
-# 파일 업로드 위젯 (AMR만 지원)
 uploaded_file = st.file_uploader("AMR 파일 업로드", type=SUPPORTED_FORMATS)
 
 if uploaded_file is not None:
@@ -58,15 +57,15 @@ if uploaded_file is not None:
         st.error("지원되는 파일 형식은 AMR 뿐입니다.")
         st.stop()
     
-    # 업로드된 파일을 임시 파일로 저장하고 권한 수정 후 AudioSegment 로딩
     try:
         file_bytes = uploaded_file.read()
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".amr") as tmp_file:
+        # 임시 파일을 현재 작업 디렉토리에 생성하여 사용
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".amr", dir=".") as tmp_file:
             tmp_file.write(file_bytes)
             temp_file_path = tmp_file.name
 
-        # 임시 파일의 권한을 644 (모든 사용자가 읽기 가능)으로 설정
-        os.chmod(temp_file_path, 0o644)
+        # 파일 권한을 모든 사용자에게 허용 (0o777)
+        os.chmod(temp_file_path, 0o777)
 
         original_audio = AudioSegment.from_file(temp_file_path, format="amr")
     except Exception as e:
