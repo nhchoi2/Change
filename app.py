@@ -3,8 +3,11 @@ import io
 import mimetypes
 from pydub import AudioSegment
 
-# ✅ 최신 FFmpeg 경로 설정
-AudioSegment.converter = r"ffmpeg\ffmpeg-7.1-essentials_build\bin\ffmpeg.exe"
+from pydub import AudioSegment
+
+# ✅ 절대 경로로 변경
+AudioSegment.converter = r"C:\Users\nhcho\OneDrive\바탕 화면\Github\Change\ffmpeg\ffmpeg-7.1-essentials_build\bin\ffmpeg.exe"
+
 
 # ✅ 지원하는 입력 포맷
 SUPPORTED_FORMATS = ["amr", "mp3", "wav", "flac", "ogg", "aac", "m4a", "wma"]
