@@ -54,6 +54,16 @@ def parse_time(time_str):
     except Exception:
         raise ValueError("시간 형식이 올바르지 않습니다. 초 단위 숫자 또는 mm:ss (혹은 hh:mm:ss) 형식으로 입력하세요.")
 
+import tempfile
+
+# 업로드된 파일을 임시 파일에 저장
+with tempfile.NamedTemporaryFile(delete=False, suffix=".amr") as tmp_file:
+    tmp_file.write(uploaded_file.read())
+    temp_file_path = tmp_file.name
+
+# 임시 파일 경로를 사용해 오디오 파일 로딩
+original_audio = AudioSegment.from_file(temp_file_path, format="amr")
+
 #######################################
 # 4. Streamlit UI 구성
 #######################################
