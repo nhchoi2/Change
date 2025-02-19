@@ -59,14 +59,14 @@ if uploaded_file is not None:
     
     try:
         file_bytes = uploaded_file.read()
-        # 임시 파일을 현재 작업 디렉토리에 생성하여 사용
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".amr", dir=".") as tmp_file:
+        # 임시 파일을 /tmp 디렉토리에 생성하여 사용
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".amr", dir="/tmp") as tmp_file:
             tmp_file.write(file_bytes)
             temp_file_path = tmp_file.name
 
-        # 파일 권한을 모든 사용자에게 허용 (0o777)
+        # 임시 파일의 권한을 0o777로 설정하여 모든 사용자가 읽을 수 있도록 함
         os.chmod(temp_file_path, 0o777)
-
+        
         original_audio = AudioSegment.from_file(temp_file_path, format="amr")
     except Exception as e:
         st.error(f"오디오 파일을 읽는 중 오류 발생:\n{e}")
