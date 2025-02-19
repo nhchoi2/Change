@@ -56,10 +56,7 @@ def parse_time(time_str):
 
 import tempfile
 
-# 업로드된 파일을 임시 파일에 저장
-with tempfile.NamedTemporaryFile(delete=False, suffix=".amr") as tmp_file:
-    tmp_file.write(uploaded_file.read())
-    temp_file_path = tmp_file.name
+
 
 # 임시 파일 경로를 사용해 오디오 파일 로딩
 original_audio = AudioSegment.from_file(temp_file_path, format="amr")
@@ -90,7 +87,13 @@ if uploaded_file is not None:
     # 파일 읽기 및 AudioSegment 로딩
     file_bytes = uploaded_file.read()
     try:
-        original_audio = AudioSegment.from_file(io.BytesIO(file_bytes), format=file_extension)
+    # 업로드된 파일을 임시 파일로 저장 (AMR 파일이므로 suffix=".amr")
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".amr") as tmp_file:
+            tmp_file.write(uploaded_file.read())
+            temp_file_path = tmp_file.name
+
+        # 임시 파일 경로를 사용하여 오디오 파일 로딩
+        original_audio = AudioSegment.from_file(temp_file_path, format="amr")
     except Exception as e:
         st.error(f"오디오 파일을 읽는 중 오류 발생:\n{e}")
         st.stop()
