@@ -8,6 +8,7 @@ import tempfile
 #######################################
 # 1. FFmpeg 및 ffprobe 경로 설정
 #######################################
+# 배포 환경(예: Streamlit Sharing)에서는 시스템 PATH에 설치된 ffmpeg/ffprobe 사용
 AudioSegment.converter = "ffmpeg"
 AudioSegment.ffprobe = "ffprobe"
 
@@ -21,6 +22,10 @@ DEFAULT_OUTPUT_FORMAT = "mp3"  # 안드로이드(갤럭시)에서 재생 가능�
 # 3. 시간 입력 검증 및 변환 함수
 #######################################
 def parse_time(time_str):
+    """
+    시간 문자열을 초 단위(float)로 변환합니다.
+    - mm:ss 또는 hh:mm:ss 형식 또는 초 단위 숫자 문자열 지원.
+    """
     try:
         time_str = time_str.strip()
         if ":" in time_str:
@@ -45,6 +50,7 @@ def parse_time(time_str):
 st.title("🎵 AMR 파일 변환 및 컷팅 앱")
 st.write("AMR 파일을 업로드하여 MP3로 변환한 후, 원하는 구간을 컷팅(편집)하여 다운로드할 수 있습니다.")
 
+# AMR 파일 업로드 (지원 포맷: AMR)
 uploaded_file = st.file_uploader("AMR 파일 업로드", type=SUPPORTED_FORMATS)
 
 if uploaded_file is not None:
@@ -59,12 +65,11 @@ if uploaded_file is not None:
     
     try:
         file_bytes = uploaded_file.read()
-        # 임시 파일을 /tmp 디렉토리에 생성하여 사용
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".amr", dir="/tmp") as tmp_file:
-            tmp_file.write(file_bytes)
-            temp_file_path = tmp_file.name
-
-        # 임시 파일의 권한을 0o777로 설정하여 모든 사용자가 읽을 수 있도록 함
+        # tempfile.mkstemp()를 사용해 현재 작업 디렉토리(또는 다른 디렉토리) 내에 임시 파일 생성
+        fd, temp_file_path = tempfile.mkstemp(suffix=".amr", dir=".")
+        os.write(fd, file_bytes)
+        os.close(fd)
+        # 파일 권한을 모든 사용자에게 허용 (0o777)
         os.chmod(temp_file_path, 0o777)
         
         original_audio = AudioSegment.from_file(temp_file_path, format="amr")
