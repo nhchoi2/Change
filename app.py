@@ -85,6 +85,9 @@ if uploaded_file is not None:
             tmp_file.write(file_bytes)
             temp_file_path = tmp_file.name
 
+        # 임시 파일의 권한을 모든 사용자가 읽을 수 있도록 변경 (0o644)
+        os.chmod(temp_file_path, 0o644)
+
         original_audio = AudioSegment.from_file(temp_file_path, format="amr")
     except Exception as e:
         st.error(f"오디오 파일을 읽는 중 오류 발생:\n{e}")
