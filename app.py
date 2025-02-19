@@ -15,7 +15,7 @@ st.title("🎵 음원 파일 변환기")
 st.write("업로드한 오디오 파일을 원하는 형식으로 변환합니다.")
 
 # ✅ 파일 업로드
-uploaded_file = st.file_uploader("오디오 파일을 업로드하세요.", type=["mp3", "wav", "flac", "ogg", "m4a"])
+uploaded_file = st.file_uploader("오디오 파일을 업로드하세요.", type=["mp3", "wav", "flac", "ogg", "m4a", "amr"])
 
 # ✅ 변환 포맷 선택
 output_format = st.selectbox("변환할 오디오 형식 선택", ["mp3", "wav", "flac", "ogg", "m4a"])
