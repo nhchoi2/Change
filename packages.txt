@@ -1,0 +1,2 @@
+AudioSegment.converter = "ffmpeg"
+AudioSegment.ffprobe = "ffprobe"
