@@ -1,12 +1,17 @@
 import streamlit as st
 import io
 import mimetypes
+import os
 from pydub import AudioSegment
 
-from pydub import AudioSegment
+# ✅ FFmpeg 경로를 직접 설정 (절대 경로로 변경)
+ffmpeg_path = r"C:\Users\nhcho\OneDrive\바탕 화면\Github\Change\ffmpeg\ffmpeg-7.1-essentials_build\bin\ffmpeg.exe"
 
-# ✅ 절대 경로로 변경
-AudioSegment.converter = r"C:\Users\nhcho\OneDrive\바탕 화면\Github\Change\ffmpeg\ffmpeg-7.1-essentials_build\bin\ffmpeg.exe"
+# ✅ FFmpeg을 환경 변수에도 추가 (Python 실행 환경에서도 인식되도록)
+os.environ["FFMPEG_BINARY"] = ffmpeg_path
+AudioSegment.converter = ffmpeg_path
+
+print(f"✅ FFmpeg 경로 설정 완료: {AudioSegment.converter}")
 
 
 # ✅ 지원하는 입력 포맷
