@@ -21,9 +21,9 @@ AudioSegment.ffprobe = "ffprobe"
 # AudioSegment.ffprobe = ffprobe_path
 
 #######################################
-# 2. 지원 포맷 및 기본 설정
+# 2. 지원 포맷 및 기본 설정 (AMR 만 지원)
 #######################################
-SUPPORTED_FORMATS = ["amr", "mp3", "wav", "flac", "ogg", "aac", "m4a", "wma"]
+SUPPORTED_FORMATS = ["amr"]
 DEFAULT_OUTPUT_FORMAT = "mp3"  # 안드로이드(갤럭시)에서 재생 가능한 MP3
 
 #######################################
@@ -57,11 +57,11 @@ def parse_time(time_str):
 #######################################
 # 4. Streamlit UI 구성
 #######################################
-st.title("🎵 오디오 파일 변환 및 컷팅 앱")
-st.write("다양한 오디오 파일을 업로드하여 MP3로 변환한 후, 원하는 구간을 컷팅(편집)하여 다운로드할 수 있습니다.")
+st.title("🎵 AMR 파일 변환 및 컷팅 앱")
+st.write("AMR 파일을 업로드하여 MP3로 변환한 후, 원하는 구간을 컷팅(편집)하여 다운로드할 수 있습니다.")
 
-# 파일 업로드 위젯
-uploaded_file = st.file_uploader("오디오 파일 업로드", type=SUPPORTED_FORMATS)
+# 파일 업로드 위젯 (AMR만 지원)
+uploaded_file = st.file_uploader("AMR 파일 업로드", type=SUPPORTED_FORMATS)
 
 if uploaded_file is not None:
     # 파일 이름 및 확장자 추출
@@ -71,6 +71,11 @@ if uploaded_file is not None:
     # MIME 타입 감지 (경우에 따라 application/octet-stream으로 나올 수 있음)
     detected_type = mimetypes.guess_type(file_name)[0]
     st.write(f"업로드한 파일: `{file_name}`, 감지된 MIME: `{detected_type}`")
+    
+    # AMR 파일이 아니면 에러 처리
+    if file_extension not in SUPPORTED_FORMATS:
+        st.error("지원되는 파일 형식은 AMR 뿐입니다.")
+        st.stop()
     
     # 파일 읽기 및 AudioSegment 로딩
     file_bytes = uploaded_file.read()
