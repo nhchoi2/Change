@@ -6,11 +6,11 @@ from pydub import AudioSegment
 import tempfile
 
 #######################################
-# 1. FFmpeg 및 ffprobe 경로 설정
+# 1. FFmpeg 및 ffprobe 절대 경로 설정
 #######################################
-# 배포 환경(예: Streamlit Sharing)에서는 시스템 PATH에 설치된 ffmpeg/ffprobe 사용
-AudioSegment.converter = "ffmpeg"
-AudioSegment.ffprobe = "ffprobe"
+# 배포 환경(예: Streamlit Sharing)에서는 시스템 PATH에 설치된 ffmpeg/ffprobe가 /usr/bin 에 있다고 가정합니다.
+AudioSegment.converter = "/usr/bin/ffmpeg"
+AudioSegment.ffprobe = "/usr/bin/ffprobe"
 
 #######################################
 # 2. 지원 포맷 및 기본 설정 (AMR 만 지원)
@@ -65,11 +65,12 @@ if uploaded_file is not None:
     
     try:
         file_bytes = uploaded_file.read()
-        # tempfile.mkstemp()를 사용해 현재 작업 디렉토리(또는 다른 디렉토리) 내에 임시 파일 생성
-        fd, temp_file_path = tempfile.mkstemp(suffix=".amr", dir=".")
-        os.write(fd, file_bytes)
-        os.close(fd)
-        # 파일 권한을 모든 사용자에게 허용 (0o777)
+        # 임시 파일을 /tmp 디렉토리에 생성 (배포 환경에서 보통 /tmp는 쓰기가 허용됨)
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".amr", dir="/tmp") as tmp_file:
+            tmp_file.write(file_bytes)
+            temp_file_path = tmp_file.name
+        
+        # 파일 권한을 모두 허용 (0o777)
         os.chmod(temp_file_path, 0o777)
         
         original_audio = AudioSegment.from_file(temp_file_path, format="amr")
