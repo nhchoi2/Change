@@ -5,19 +5,20 @@ import streamlit as st
 from pydub import AudioSegment
 
 #######################################
-# 1. FFmpeg 및 ffprobe 절대 경로 설정
+# 1. FFmpeg 및 ffprobe 경로 설정
 #######################################
-# FFmpeg 및 ffprobe 실행 파일 경로 (절대 경로 사용)
-ffmpeg_path = r"C:\Users\nhcho\OneDrive\바탕 화면\Github\Change\ffmpeg\ffmpeg-7.1-essentials_build\bin\ffmpeg.exe"
-ffprobe_path = r"C:\Users\nhcho\OneDrive\바탕 화면\Github\Change\ffmpeg\ffmpeg-7.1-essentials_build\bin\ffprobe.exe"
+# 배포 환경(리눅스, Streamlit Sharing)에서는 시스템 PATH에 설치된 ffmpeg/ffprobe 사용
+AudioSegment.converter = "ffmpeg"
+AudioSegment.ffprobe = "ffprobe"
 
-# 환경 변수에 등록
-os.environ["FFMPEG_BINARY"] = ffmpeg_path
-os.environ["FFPROBE_BINARY"] = ffprobe_path
-
-# pydub에 경로 설정
-AudioSegment.converter = ffmpeg_path
-AudioSegment.ffprobe = ffprobe_path
+# 로컬 Windows 환경에서 테스트할 경우 아래 주석을 해제하여 절대 경로를 사용하세요.
+# 예시:
+# ffmpeg_path = r"C:\Users\nhcho\OneDrive\바탕 화면\Github\Change\ffmpeg\ffmpeg-7.1-essentials_build\bin\ffmpeg.exe"
+# ffprobe_path = r"C:\Users\nhcho\OneDrive\바탕 화면\Github\Change\ffmpeg\ffmpeg-7.1-essentials_build\bin\ffprobe.exe"
+# os.environ["FFMPEG_BINARY"] = ffmpeg_path
+# os.environ["FFPROBE_BINARY"] = ffprobe_path
+# AudioSegment.converter = ffmpeg_path
+# AudioSegment.ffprobe = ffprobe_path
 
 #######################################
 # 2. 지원 포맷 및 기본 설정
@@ -29,7 +30,7 @@ DEFAULT_OUTPUT_FORMAT = "mp3"  # 안드로이드(갤럭시)에서 재생 가능�
 # 3. Streamlit UI 구성
 #######################################
 st.title("🎵 다중 오디오 포맷 변환기")
-st.write("여러 오디오 파일을 업로드하여 안드로이드(갤럭시)에서 재생 가능한 MP3로 변환합니다.")
+st.write("다양한 오디오 파일을 업로드하여 안드로이드(갤럭시)에서 재생 가능한 MP3로 변환합니다.")
 
 # 파일 업로드 위젯
 uploaded_file = st.file_uploader("오디오 파일 업로드", type=SUPPORTED_FORMATS)
@@ -42,7 +43,7 @@ if uploaded_file is not None:
     file_name = uploaded_file.name
     file_extension = file_name.split(".")[-1].lower()
     
-    # MIME 타입 감지 (경우에 따라 application/octet-stream으로 나올 수 있음)
+    # MIME 타입 감지 (종종 'application/octet-stream'으로 나올 수 있음)
     detected_type = mimetypes.guess_type(file_name)[0]
     st.write(f"업로드한 파일: `{file_name}`, 감지된 MIME: `{detected_type}`")
     
