@@ -1,6 +1,5 @@
 import os
 import io
-import re
 import mimetypes
 import streamlit as st
 from pydub import AudioSegment
@@ -9,17 +8,8 @@ import tempfile
 #######################################
 # 1. FFmpeg 및 ffprobe 경로 설정
 #######################################
-# 배포 환경(예: Streamlit Sharing)에서는 시스템 PATH에 설치된 ffmpeg/ffprobe 사용
 AudioSegment.converter = "ffmpeg"
 AudioSegment.ffprobe = "ffprobe"
-
-# 로컬 Windows 테스트 시 아래 주석을 해제하여 절대 경로를 사용할 수 있습니다.
-# ffmpeg_path = r"C:\Users\nhcho\OneDrive\바탕 화면\Github\Change\ffmpeg\ffmpeg-7.1-essentials_build\bin\ffmpeg.exe"
-# ffprobe_path = r"C:\Users\nhcho\OneDrive\바탕 화면\Github\Change\ffmpeg\ffmpeg-7.1-essentials_build\bin\ffprobe.exe"
-# os.environ["FFMPEG_BINARY"] = ffmpeg_path
-# os.environ["FFPROBE_BINARY"] = ffprobe_path
-# AudioSegment.converter = ffmpeg_path
-# AudioSegment.ffprobe = ffprobe_path
 
 #######################################
 # 2. 지원 포맷 및 기본 설정 (AMR 만 지원)
@@ -31,21 +21,15 @@ DEFAULT_OUTPUT_FORMAT = "mp3"  # 안드로이드(갤럭시)에서 재생 가능�
 # 3. 시간 입력 검증 및 변환 함수
 #######################################
 def parse_time(time_str):
-    """
-    시간 문자열을 초 단위(float)로 변환합니다.
-    - mm:ss 또는 hh:mm:ss 형식 또는 초 단위 숫자 문자열 지원.
-    """
     try:
         time_str = time_str.strip()
         if ":" in time_str:
             parts = time_str.split(":")
             parts = [float(p) for p in parts]
             if len(parts) == 2:
-                # mm:ss
                 minutes, seconds = parts
                 return minutes * 60 + seconds
             elif len(parts) == 3:
-                # hh:mm:ss
                 hours, minutes, seconds = parts
                 return hours * 3600 + minutes * 60 + seconds
             else:
@@ -65,27 +49,23 @@ st.write("AMR 파일을 업로드하여 MP3로 변환한 후, 원하는 구간�
 uploaded_file = st.file_uploader("AMR 파일 업로드", type=SUPPORTED_FORMATS)
 
 if uploaded_file is not None:
-    # 파일 이름 및 확장자 추출
     file_name = uploaded_file.name
     file_extension = file_name.split(".")[-1].lower()
-    
-    # MIME 타입 감지 (경우에 따라 application/octet-stream으로 나올 수 있음)
     detected_type = mimetypes.guess_type(file_name)[0]
     st.write(f"업로드한 파일: `{file_name}`, 감지된 MIME: `{detected_type}`")
     
-    # AMR 파일이 아니면 에러 처리
     if file_extension not in SUPPORTED_FORMATS:
         st.error("지원되는 파일 형식은 AMR 뿐입니다.")
         st.stop()
     
-    # 업로드된 파일을 임시 파일로 저장하고 AudioSegment 로딩
+    # 업로드된 파일을 임시 파일로 저장하고 권한 수정 후 AudioSegment 로딩
     try:
         file_bytes = uploaded_file.read()
         with tempfile.NamedTemporaryFile(delete=False, suffix=".amr") as tmp_file:
             tmp_file.write(file_bytes)
             temp_file_path = tmp_file.name
 
-        # 임시 파일의 권한을 모든 사용자가 읽을 수 있도록 변경 (0o644)
+        # 임시 파일의 권한을 644 (모든 사용자가 읽기 가능)으로 설정
         os.chmod(temp_file_path, 0o644)
 
         original_audio = AudioSegment.from_file(temp_file_path, format="amr")
@@ -123,17 +103,14 @@ if uploaded_file is not None:
         try:
             start_sec = parse_time(start_time_input)
             if end_time_input.strip() == "":
-                # 종료 시간이 비어 있으면 전체 길이를 사용
                 end_sec = len(original_audio) / 1000.0
             else:
                 end_sec = parse_time(end_time_input)
             
-            # 시간 범위 검증
             total_sec = len(original_audio) / 1000.0
             if start_sec < 0 or end_sec <= start_sec or end_sec > total_sec:
                 st.error("시간 범위가 올바르지 않습니다. 시작 시간은 0 이상, 종료 시간은 시작 시간보다 커야 하며 오디오 길이 이하여야 합니다.")
             else:
-                # pydub은 밀리초 단위 사용
                 start_ms = int(start_sec * 1000)
                 end_ms = int(end_sec * 1000)
                 cut_audio = original_audio[start_ms:end_ms]
